@@ -87,9 +87,14 @@ class ApicL3ServicePlugin(db_base_plugin_v2.NeutronDbPluginV2,
             filters = {'device_id': [router_id],
                        'device_owner': [q_const.DEVICE_OWNER_ROUTER_GW],
                        'network_id': [info['network_id']]}
-            ports = self.get_ports(context.elevated(), filters=filters)
-            manager.NeutronManager.get_plugin().update_port_status(
-                context, ports[0]['id'], q_const.PORT_STATUS_ACTIVE)
+            while True:
+                try:
+                    ports = self.get_ports(context, filters=filters)
+                    manager.NeutronManager.get_plugin().update_port_status(
+                        context, ports[0]['id'], q_const.PORT_STATUS_ACTIVE)
+                    break
+                except IndexError:
+                    pass
 
     @staticmethod
     def get_plugin_type():
